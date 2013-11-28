@@ -24,6 +24,12 @@
               (.concat acc s))
             rows)))
 
+(defn mark-at?
+  [board row-index col-index]
+  (let [v ((board row-index) col-index)]
+    (or (= v :x)
+        (= v :o))))
+
 (defn place-mark-at
   [board mark row-index col-index]
   (let [row (board row-index)
