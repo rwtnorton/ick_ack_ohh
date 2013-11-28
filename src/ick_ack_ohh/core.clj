@@ -27,12 +27,22 @@
               (.concat acc s))
             rows)))
 
+(defn value-at
+  "Returns the value for position."
+  [board [row-index col-index]]
+  ((board row-index) col-index))
+
 (defn mark-at?
   "Returns true iff position has X or O."
-  [board [row-index col-index]]
-  (let [v ((board row-index) col-index)]
+  [board pos]
+  (let [v (value-at board pos)]
     (or (= v :x)
         (= v :o))))
+
+(defn open-at?
+  "Returns true iff mark-at? returns false for position."
+  [board pos]
+  (not (mark-at? board pos)))
 
 (defn place-mark-at
   "Returns new board with mark applied at position."
@@ -47,13 +57,23 @@
             (range (count board))
             board)))))
 
-;; (defn positions
-;;   [board]
-;;   (for [r (range (count
+(defn positions
+  "Returns seq of all positions."
+  [board]
+  (let [ps (map (fn [row-index row]
+                  (map (fn [col-index]
+                         [row-index col-index])
+                       (range (count row))))
+                (range (count board))
+                board)]
+    (apply concat ps)))
 
-;; (defn open-positions
-;;   [board]
-;;   )
+(defn open-positions
+  "Returns seq of all open positions."
+  [board]
+  (filter (fn [pos]
+            (open-at? board pos))
+          (positions board)))
 
 (defn -main
   [& args]
