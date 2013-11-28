@@ -42,12 +42,18 @@
     (let [row (board row-index)
           row (assoc row col-index mark)]
       (vec
-       (map (fn [i]
-              (let [r (board i)]
-                (if (= i row-index)
-                  row
-                  r)))
-            (range (count board)))))))
+       (map (fn [i r]
+              (if (= i row-index) row r))
+            (range (count board))
+            board)))))
+
+;; (defn positions
+;;   [board]
+;;   (for [r (range (count
+
+;; (defn open-positions
+;;   [board]
+;;   )
 
 (defn -main
   [& args]
