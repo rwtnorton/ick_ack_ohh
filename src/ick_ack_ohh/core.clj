@@ -1,9 +1,13 @@
 (ns ick-ack-ohh.core
   (:require [clojure.string :as str]))
 
+;;
 ;; Represent a game board as a 3x3 vector-of-vectors,
-;; where each position on the board is one of:
+;; where each position on the board is a zero-indexed
+;; vector pair (e.g., [0 0], [0 1]), and where each position
+;; holds one of the following marks:
 ;;   :x, :o, or :_
+;;
 
 (defn new-board
   "Returns an empty 3x3 board."
@@ -26,6 +30,11 @@
     (reduce (fn [acc s]
               (.concat acc s))
             rows)))
+
+(defn print-board
+  "Writes string repr of board to stdout."
+  [b]
+  (print (board->string b)))
 
 (defn value-at
   "Returns the value for position."
@@ -58,7 +67,7 @@
             board)))))
 
 (defn positions
-  "Returns seq of all positions."
+  "Returns seq of all positions for board."
   [board]
   (let [ps (map (fn [row-index row]
                   (map (fn [col-index]
@@ -69,7 +78,7 @@
     (apply concat ps)))
 
 (defn open-positions
-  "Returns seq of all open positions."
+  "Returns seq of all open positions on board."
   [board]
   (filter (fn [pos]
             (open-at? board pos))
