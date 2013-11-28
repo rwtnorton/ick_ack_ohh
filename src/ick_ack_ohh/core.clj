@@ -1,5 +1,5 @@
 (ns ick-ack-ohh.core
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str-ops])
   (:require [clojure.set :as set-ops]))
 
 ;;
@@ -25,7 +25,7 @@
   "Returns string representation of a board."
   [b]
   (let [rows (for [row b]
-               (str/join "|" (map mark->string row)))
+               (str-ops/join "|" (map mark->string row)))
         rows (interpose "-+-+-" rows)
         rows (map (fn [s] (.concat s "\n")) rows)]
     (reduce (fn [acc s]
