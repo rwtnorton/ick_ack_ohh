@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # ick_ack_ohh
 
 A Clojure library designed to play a perfect game of Tic Tac Toe.
