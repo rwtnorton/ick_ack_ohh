@@ -29,23 +29,25 @@
 
 (defn mark-at?
   "Returns true iff position has X or O."
-  [board row-index col-index]
+  [board [row-index col-index]]
   (let [v ((board row-index) col-index)]
     (or (= v :x)
         (= v :o))))
 
 (defn place-mark-at
   "Returns new board with mark applied at position."
-  [board mark row-index col-index]
-  (let [row (board row-index)
-        row (assoc row col-index mark)]
-    (vec
-     (map (fn [i]
-            (let [r (board i)]
-              (if (= i row-index)
-                row
-                r)))
-          (range (count board))))))
+  [board mark [row-index col-index]]
+  (if (mark-at? board [row-index col-index])
+    board ;; ignore requests to clobber occupied positions.
+    (let [row (board row-index)
+          row (assoc row col-index mark)]
+      (vec
+       (map (fn [i]
+              (let [r (board i)]
+                (if (= i row-index)
+                  row
+                  r)))
+            (range (count board)))))))
 
 (defn -main
   [& args]
