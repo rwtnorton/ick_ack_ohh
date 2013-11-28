@@ -1,5 +1,6 @@
 (ns ick-ack-ohh.core
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:require [clojure.set :as set-ops]))
 
 ;;
 ;; Represent a game board as a 3x3 vector-of-vectors,
@@ -83,6 +84,30 @@
   (filter (fn [pos]
             (open-at? board pos))
           (positions board)))
+
+(defn neighborhood
+  [[row col]]
+  (let [nbhd (for [r (map (fn [d] (+ row d)) [-1 0 1])
+                   c (map (fn [d] (+ col d)) [-1 0 1])]
+               [r c])]
+    (set-ops/difference (set nbhd) #{[row col]})))
+
+(defn neighbors?
+  [pos1 pos2]
+  (contains? (neighborhood pos1) pos2))
+
+(defn neighboring-positions
+  [board pos]
+  (let [ps (set (positions board))
+        ns (neighborhood pos)]
+    (set-ops/intersection ns ps)))
+
+;; (defn valid-position?
+;;   [[row col]]
+;;   (let [valid-row (fn [r] (and (>= r 0) (< r 3)))
+;;         valid-col (fn [c] (and (>= c 0) (< c 3)))]
+;;     (and (valid-row row)
+;;          (valid-col col))))
 
 (defn -main
   [& args]
