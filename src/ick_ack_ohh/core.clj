@@ -10,14 +10,14 @@
   (vec (for [i (range 3)]
          (vec (repeat 3 :_)))))
 
-(defn position->string
-  [p]
-  (get {:x "X", :o "O", :_ " "} p "?"))
+(defn mark->string
+  [m]
+  (get {:x "X", :o "O", :_ " "} m "?"))
 
 (defn board->string
   [b]
   (let [rows (for [row b]
-               (str/join "|" (map position->string row)))
+               (str/join "|" (map mark->string row)))
         rows (interpose "-+-+-" rows)
         rows (map (fn [s] (.concat s "\n")) rows)]
     (reduce (fn [acc s]
