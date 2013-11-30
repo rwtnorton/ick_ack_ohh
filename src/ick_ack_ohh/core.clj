@@ -119,15 +119,23 @@
   [board]
   (empty? (open-positions board)))
 
-(defn win-for-x?
-  [board]
+(defn -win-for?
+  [board mark]
   (letfn [(winners->marks [winners]
             (map (fn [p] (value-at board p)) winners))
           (all-x? [marks]
-            (every? (fn [m] (= m :x)) marks))]
+            (every? (fn [m] (= m mark)) marks))]
     (boolean
      (some (fn [winners] (all-x? (winners->marks winners)))
            (winning-positionings board)))))
+
+(defn win-for-x?
+  [board]
+  (-win-for? board :x))
+
+(defn win-for-o?
+  [board]
+  (-win-for? board :o))
 
 (defn -main
   [& args]

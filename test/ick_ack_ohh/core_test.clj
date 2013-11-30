@@ -151,3 +151,17 @@
     (is (win-for-x? [[:x :_ :_] [:_ :x :_] [:_ :_ :x]])))
   (testing "with :x's along top-right-to-bottom-left diagonal"
     (is (win-for-x? [[:_ :_ :x] [:_ :x :_] [:x :_ :_]]))))
+
+(deftest test-win-for-o?
+  (testing "with new board"
+    (is (not (win-for-o? (new-board)))))
+  (testing "with :o's across top row"
+    (is (win-for-o? [[:o :o :o] [:_ :_ :_] [:_ :_ :_]])))
+  (testing "with :x's down middle"
+    (is (not (win-for-o? [[:o :x :_] [:_ :x :_] [:_ :x :o]]))))
+  (testing "with :o's down rightmost column"
+    (is (win-for-o? [[:_ :_ :o] [:_ :_ :o] [:_ :_ :o]])))
+  (testing "with :o's along top-left-to-bottom-right diagonal"
+    (is (win-for-o? [[:o :_ :_] [:_ :o :_] [:_ :_ :o]])))
+  (testing "with :o's along top-right-to-bottom-left diagonal"
+    (is (win-for-o? [[:_ :_ :o] [:_ :o :_] [:o :_ :_]]))))
