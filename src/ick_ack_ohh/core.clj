@@ -105,14 +105,24 @@
   "Returns set of sets of positions crucial to a win."
   [board]
   ;; Hard-coded for 3x3.
-  (set [ #{[0 0] [0 1] [0 2]}
-         #{[1 0] [1 1] [1 2]}
-         #{[2 0] [2 1] [2 2]}
-         #{[0 0] [0 1] [0 2]}
-         #{[1 0] [1 1] [1 2]}
-         #{[2 0] [2 1] [2 2]}
-         #{[0 0] [1 1] [2 2]}
-         #{[0 2] [1 1] [2 0]} ]))
+  #{ #{[0 0] [0 1] [0 2]}
+     #{[1 0] [1 1] [1 2]}
+     #{[2 0] [2 1] [2 2]}
+     #{[0 0] [1 0] [2 0]}
+     #{[0 1] [1 1] [2 1]}
+     #{[0 2] [1 2] [2 2]}
+     #{[0 0] [1 1] [2 2]}
+     #{[0 2] [1 1] [2 0]} })
+
+(defn win-for-x?
+  [board]
+  (letfn [(winners->marks [winners]
+            (map (fn [p] (value-at board p)) winners))
+          (all-x? [marks]
+            (every? (fn [m] (= m :x)) marks))]
+    (boolean
+     (some (fn [winners] (all-x? (winners->marks winners)))
+           (winning-positionings board)))))
 
 (defn -main
   [& args]

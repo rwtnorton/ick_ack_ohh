@@ -141,11 +141,25 @@
 (deftest test-winning-positionings
   (testing ""
     (is (= (winning-positionings (new-board))
-           (set [ #{[0 0] [0 1] [0 2]}
-                  #{[1 0] [1 1] [1 2]}
-                  #{[2 0] [2 1] [2 2]}
-                  #{[0 0] [0 1] [0 2]}
-                  #{[1 0] [1 1] [1 2]}
-                  #{[2 0] [2 1] [2 2]}
-                  #{[0 0] [1 1] [2 2]}
-                  #{[0 2] [1 1] [2 0]} ])))))
+           #{ #{[0 0] [0 1] [0 2]}
+              #{[1 0] [1 1] [1 2]}
+              #{[2 0] [2 1] [2 2]}
+              #{[0 0] [1 0] [2 0]}
+              #{[0 1] [1 1] [2 1]}
+              #{[0 2] [1 2] [2 2]}
+              #{[0 0] [1 1] [2 2]}
+              #{[0 2] [1 1] [2 0]} }))))
+
+(deftest test-win-for-x?
+  (testing "with new board"
+    (is (not (win-for-x? (new-board)))))
+  (testing "with :x's across top row"
+    (is (win-for-x? [[:x :x :x] [:_ :_ :_] [:_ :_ :_]])))
+  (testing "with :o's down middle"
+    (is (not (win-for-x? [[:x :o :_] [:_ :o :_] [:_ :o :x]]))))
+  (testing "with :x's down rightmost column"
+    (is (win-for-x? [[:_ :_ :x] [:_ :_ :x] [:_ :_ :x]])))
+  (testing "with :x's along top-left-to-bottom-right diagonal"
+    (is (win-for-x? [[:x :_ :_] [:_ :x :_] [:_ :_ :x]])))
+  (testing "with :x's along top-right-to-bottom-left diagonal"
+    (is (win-for-x? [[:_ :_ :x] [:_ :x :_] [:x :_ :_]]))))
