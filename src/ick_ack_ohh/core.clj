@@ -145,5 +145,21 @@
 
 (defn -main
   [& args]
-  (doseq [s ["Ick!" "Ack!!" "Ohh..."]]
-    (println s)))
+  (letfn [(parse-position [s]
+            (vec
+             (map (fn [s] (Integer/parseInt s))
+                  (clojure.string/split s #"\D+"))))
+          (prompt []
+            (print "Position: ")
+            (flush)
+            (read-line))
+          (game-loop [board mark]
+            (print-board board)
+            (cond (win-for-x? board) (println "X wins.")
+                  (win-for-o? board) (println "O wins.")
+                  (cat? board) (println "Cat wins.")
+                  :else (let [p (parse-position (prompt))
+                              b (place-mark-at board mark p)
+                              m (if (= mark :x) :o :x)]
+                          (recur b m))))]
+    (game-loop (new-board) :x)))
