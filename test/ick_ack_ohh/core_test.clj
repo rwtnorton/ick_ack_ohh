@@ -130,6 +130,14 @@
             #{[0 0] [1 1] [2 2]}
             #{[0 2] [1 1] [2 0]} })))
 
+(deftest test-full-board?
+  (testing "for new board"
+    (is (not (full-board? (new-board)))))
+  (testing "for fully marked board"
+    (is (full-board? [[:x :x :x] [:o :o :o] [:x :o :x]])))
+  (testing "for non-new but not fully marked board"
+    (is (not (full-board? [[:x :x :x] [:o :o :o] [:x :o :_]])))))
+
 (deftest test-win-for-x?
   (testing "with new board"
     (is (not (win-for-x? (new-board)))))

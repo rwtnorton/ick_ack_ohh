@@ -114,6 +114,11 @@
      #{[0 0] [1 1] [2 2]}
      #{[0 2] [1 1] [2 0]} })
 
+(defn full-board?
+  "Returns true iff board has no open positions left."
+  [board]
+  (empty? (open-positions board)))
+
 (defn win-for-x?
   [board]
   (letfn [(winners->marks [winners]
