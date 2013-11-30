@@ -62,20 +62,16 @@
     (let [row (board row-index)
           row (assoc row col-index mark)]
       (vec
-       (map (fn [i r]
-              (if (= i row-index) row r))
-            (range (count board))
-            board)))))
+       (map-indexed (fn [i r] (if (= i row-index) row r))
+                    board)))))
 
 (defn positions
   "Returns seq of all positions for board."
   [board]
-  (let [ps (map (fn [row-index row]
-                  (map (fn [col-index]
-                         [row-index col-index])
-                       (range (count row))))
-                (range (count board))
-                board)]
+  (let [ps (map-indexed (fn [row-index row]
+                          (map (fn [col-index] [row-index col-index])
+                               (range (count row))))
+                        board)]
     (apply concat ps)))
 
 (defn open-positions
@@ -101,13 +97,6 @@
   (let [ps (set (positions board))
         ns (neighborhood pos)]
     (set-ops/intersection ns ps)))
-
-;; (defn valid-position?
-;;   [[row col]]
-;;   (let [valid-row (fn [r] (and (>= r 0) (< r 3)))
-;;         valid-col (fn [c] (and (>= c 0) (< c 3)))]
-;;     (and (valid-row row)
-;;          (valid-col col))))
 
 (defn -main
   [& args]
