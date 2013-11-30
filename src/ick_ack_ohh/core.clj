@@ -101,6 +101,19 @@
         ns (neighborhood pos)]
     (set-ops/intersection ns ps)))
 
+(defn winning-positionings
+  "Returns set of sets of positions crucial to a win."
+  [board]
+  ;; Hard-coded for 3x3.
+  (set [ #{[0 0] [0 1] [0 2]}
+         #{[1 0] [1 1] [1 2]}
+         #{[2 0] [2 1] [2 2]}
+         #{[0 0] [0 1] [0 2]}
+         #{[1 0] [1 1] [1 2]}
+         #{[2 0] [2 1] [2 2]}
+         #{[0 0] [1 1] [2 2]}
+         #{[0 2] [1 1] [2 0]} ]))
+
 (defn -main
   [& args]
   (doseq [s ["Ick!" "Ack!!" "Ohh..."]]
