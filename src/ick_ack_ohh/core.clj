@@ -137,6 +137,12 @@
   [board]
   (-win-for? board :o))
 
+(defn cat?
+  [board]
+  (and (full-board? board)
+       (not (win-for-x? board))
+       (not (win-for-o? board))))
+
 (defn -main
   [& args]
   (doseq [s ["Ick!" "Ack!!" "Ohh..."]]

@@ -165,3 +165,11 @@
     (is (win-for-o? [[:o :_ :_] [:_ :o :_] [:_ :_ :o]])))
   (testing "with :o's along top-right-to-bottom-left diagonal"
     (is (win-for-o? [[:_ :_ :o] [:_ :o :_] [:o :_ :_]]))))
+
+(deftest test-cat?
+  (testing "for new board"
+    (is (not (cat? (new-board)))))
+  (testing "for x-won, non-full board"
+    (is (not (cat? [[:x :x :x] [:_ :o :o] [:_ :_ :_]]))))
+  (testing "for no-winner, full board"
+    (is (cat? [[:x :o :o] [:o :x :x] [:x :o :o]]))))
