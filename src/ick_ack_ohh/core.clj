@@ -82,6 +82,7 @@
           (positions board)))
 
 (defn neighborhood
+  "Returns set of positions logically adjacent with pos, independent of board."
   [[row col]]
   (let [nbhd (for [r (map (fn [d] (+ row d)) [-1 0 1])
                    c (map (fn [d] (+ col d)) [-1 0 1])]
@@ -89,10 +90,12 @@
     (set-ops/difference (set nbhd) #{[row col]})))
 
 (defn neighbors?
+  "Returns true iff pos1 is logically adjacent with pos2, independent of board."
   [pos1 pos2]
   (contains? (neighborhood pos1) pos2))
 
 (defn neighboring-positions
+  "Returns set of positions adjacent with with pos with respect to board."
   [board pos]
   (let [ps (set (positions board))
         ns (neighborhood pos)]
