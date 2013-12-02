@@ -160,6 +160,15 @@
               (map (fn [ps] (group-by-marks ps))
                    (winning-positionings board)))))))
 
+(defn fork-moves-for
+  [board mark]
+  (set
+   (filter (fn [p]
+             (let [b (place-mark-at board mark p)
+                   win-ps (finishing-moves-for b mark)]
+               (>= (count win-ps) 2)))
+           (open-positions board))))
+
 (defn -main
   [& args]
   (letfn [(parse-position [s]

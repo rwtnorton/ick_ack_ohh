@@ -178,10 +178,29 @@
   (testing "for new board"
     (is (empty? (finishing-moves-for (new-board) :x))))
   (testing "for non-finishing-move board"
-    (is (empty? (finishing-moves-for [[:x :_ :_] [:o :_ :o] [:o :x :_]] :x))))
+    (is (empty? (finishing-moves-for [[:x :_ :_]
+                                      [:o :_ :o]
+                                      [:o :x :_]] :x))))
   (testing "for finishing-move board for x on x"
     (is (= #{[0 0]}
-           (finishing-moves-for [[:_ :o :_] [:o :x :_] [:_ :_ :x]] :x))))
+           (finishing-moves-for [[:_ :o :_]
+                                 [:o :x :_]
+                                 [:_ :_ :x]] :x))))
   (testing "for finishing-move board for x on o"
     (is (= #{[0 1] [1 0] [1 1]}
-           (finishing-moves-for [[:o :_ :o] [:_ :_ :x] [:o :x :x]] :o)))))
+           (finishing-moves-for [[:o :_ :o]
+                                 [:_ :_ :x]
+                                 [:o :x :x]] :o)))))
+
+(deftest test-fork-moves-for
+  (testing "for new board"
+    (is (empty? (fork-moves-for (new-board) :x))))
+  (testing "for non-fork-move board"
+    (is (empty? (fork-moves-for [[:x :o :x]
+                                 [:o :_ :o]
+                                 [:o :x :_]] :x))))
+  (testing "for fork-move board for x on x"
+    (is (= #{[0 1] [0 2]}
+           (fork-moves-for [[:x :_ :_]
+                            [:_ :o :o]
+                            [:x :o :_]] :x)))))
