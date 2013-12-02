@@ -143,6 +143,23 @@
        (not (win-for-x? board))
        (not (win-for-o? board))))
 
+
+(defn finishing-moves-for
+  [board mark]
+  (letfn [(extract-open-pos [ms]
+            (map (fn [m] (first (:_ m))) ms))
+          (group-by-marks [ps]
+            (group-by (fn [p] (value-at board p)) ps))
+          (poised? [ps-by-marks]
+            (let [mark-count (count (mark ps-by-marks))
+                  open-count (count (:_ ps-by-marks))]
+              (and (= 1 open-count) (= 2 mark-count))))]
+    (set
+     (extract-open-pos
+      (filter (fn [ps-by-marks] (poised? ps-by-marks))
+              (map (fn [ps] (group-by-marks ps))
+                   (winning-positionings board)))))))
+
 (defn -main
   [& args]
   (letfn [(parse-position [s]
