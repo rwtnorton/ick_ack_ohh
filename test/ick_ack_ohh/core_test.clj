@@ -204,3 +204,19 @@
            (fork-moves-for [[:x :_ :_]
                             [:_ :o :o]
                             [:x :o :_]] :x)))))
+
+(deftest test-fork-for?
+  (testing "for new board"
+    (is (not (fork-for? (new-board) :x))))
+  (testing "for non-fork board"
+    (is (not (fork-for? [[:x :x :_]
+                         [:o :_ :o]
+                         [:_ :_ :_]] :x))))
+  (testing "for fork board for x on x"
+    (is (fork-for? [[:o :_ :x]
+                    [:o :o :_]
+                    [:x :_ :x]] :x)))
+  (testing "for fork board for x on o"
+    (is (not (fork-for? [[:o :_ :x]
+                         [:o :o :_]
+                         [:x :_ :x]] :o)))))

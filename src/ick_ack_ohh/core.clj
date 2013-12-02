@@ -169,6 +169,11 @@
                (>= (count win-ps) 2)))
            (open-positions board))))
 
+(defn fork-for?
+  [board mark]
+  (>= (count (finishing-moves-for board mark))
+      2))
+
 (defn -main
   [& args]
   (letfn [(parse-position [s]
