@@ -174,6 +174,46 @@
   (>= (count (finishing-moves-for board mark))
       2))
 
+(defn opponent-mark-for
+  [mark]
+  (cond (= mark :x) :o
+        (= mark :o) :x
+        :else :?))
+
+(defn open-center?
+  [board]
+  (not (empty? (set-ops/intersection
+                (set (open-positions board))
+                #{[1 1]}))))
+
+(defn corner-positions
+  [board]
+  #{[0 0] [0 2] [2 0] [2 2]})
+
+(defn open-corners
+  [board]
+  (set-ops/intersection (set (open-positions board))
+                        (corner-positions board)))
+
+(defn choose-next-move-for
+  [board mark]
+  (let [win-ps (finishing-moves-for board mark)
+        opp-mark (opponent-mark-for mark)
+        opp-win-ps (finishing-moves-for board opp-mark)
+        fork-ps (fork-moves-for board mark)
+        opp-fork-ps (fork-moves-for board opp-mark)
+        corner-fork-block-ps (set-ops/intersection opp-fork-ps
+                                                   (corner-positions board))
+        corners (open-corners board)]
+    (cond (not (empty? win-ps)) (first win-ps)
+          (not (empty? opp-win-ps)) (first opp-win-ps)
+          (not (empty? fork-ps)) (first fork-ps)
+          (not (empty? corner-fork-block-ps)) (first corner-fork-block-ps)
+          (not (empty? opp-fork-ps)) (first opp-fork-ps)
+          (open-center? board) [1 1]
+          (not (empty? corners)) (first corners)
+          :else (first (open-positions board)))))
+
 (defn -main
   [& args]
   (letfn [(parse-position [s]
@@ -181,7 +221,7 @@
              (map (fn [s] (Integer/parseInt s))
                   (clojure.string/split s #"\D+"))))
           (prompt []
-            (print "Position: ")
+            (print "Enter row and column (zero-indexed): ")
             (flush)
             (read-line))
           (game-loop [board mark]
@@ -189,7 +229,10 @@
             (cond (win-for-x? board) (println "X wins.")
                   (win-for-o? board) (println "O wins.")
                   (cat? board) (println "Cat wins.")
-                  :else (let [p (parse-position (prompt))
+                  :else (let [p (if (= mark :x)
+                                  (parse-position (prompt))
+                                  (do (println)
+                                      (choose-next-move-for board :o)))
                               b (place-mark-at board mark p)
                               m (if (= mark :x) :o :x)]
                           (recur b m))))]

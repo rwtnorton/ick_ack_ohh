@@ -220,3 +220,90 @@
     (is (not (fork-for? [[:o :_ :x]
                          [:o :o :_]
                          [:x :_ :x]] :o)))))
+
+(deftest test-open-center?
+  (testing "for new board"
+    (is (open-center? (new-board))))
+  (testing "for board with occupied center"
+    (is (not (open-center? [[:_ :_ :_]
+                            [:_ :x :_]
+                            [:_ :_ :_]])))))
+
+(deftest test-corner-positions
+  (= (corner-positions (new-board))
+     #{[0 0] [0 2] [2 0] [2 2]}))
+
+(deftest test-open-corners
+  (testing "for new board"
+    (= (open-corners (new-board))
+       #{[0 0] [0 2] [2 0] [2 2]}))
+  (testing "for board with upper-left occupied"
+    (= (open-corners [[:x :_ :_]
+                      [:_ :_ :_]
+                      [:_ :_ :_]])
+       #{[0 2] [2 0] [2 2]}))
+  (testing "for board with only corners occupied"
+    (= (open-corners [[:x :_ :o]
+                      [:_ :_ :_]
+                      [:o :_ :x]])
+       #{})))
+
+(deftest test-choose-next-move-for
+  (testing "for new board"
+    (is (= [1 1]
+           (choose-next-move-for (new-board) :x))))
+  (testing "for board poised for win for x on x"
+    (is (= (choose-next-move-for [[:x :_ :x]
+                                  [:o :_ :o]
+                                  [:_ :_ :_]] :x)
+           [0 1])))
+  (testing "for board poised for win for o on x"
+    (is (= (choose-next-move-for [[:x :_ :_]
+                                  [:o :_ :o]
+                                  [:_ :_ :_]] :x)
+           [1 1])))
+  (testing "for board forkable for x on x"
+    (is (contains?
+         #{[0 2] [2 0]}
+         (choose-next-move-for [[:x :_ :_]
+                                [:_ :o :_]
+                                [:_ :_ :x]] :x))))
+  (testing "for board with a corner fork-block"
+    (is (contains?
+         #{[0 2] [2 0]}
+         (choose-next-move-for [[:x :_ :_]
+                                [:_ :x :_]
+                                [:_ :_ :o]] :o))))
+  (testing "for board forkable for o on x"
+    (is (contains?
+         #{[0 2] [2 0]}
+         (choose-next-move-for [[:o :_ :_]
+                                [:_ :x :_]
+                                [:_ :_ :o]] :x))))
+  (testing "for board where center is best move"
+    (is (= [1 1]
+           (choose-next-move-for [[:_ :o :x]
+                                  [:_ :_ :_]
+                                  [:o :x :_]] :x))))
+  (testing "for board where empty corner is best move"
+    (is (contains?
+         #{[0 0] [2 0] [2 2]}
+         (choose-next-move-for [[:_ :_ :x]
+                                [:_ :o :_]
+                                [:_ :_ :_]] :x))))
+  (testing "for board where empty side is best move"
+    (is (contains?
+         #{[0 1] [1 0]}
+         (choose-next-move-for [[:o :_ :x]
+                                [:_ :o :o]
+                                [:x :o :x]] :x))))
+  (testing "for board with only one open move left"
+    (is (= [0 1]
+           (choose-next-move-for [[:o :_ :x]
+                                  [:x :o :o]
+                                  [:x :o :x]] :x))))
+  (testing "for full board"
+    (is (= nil
+           (choose-next-move-for [[:o :x :x]
+                                  [:x :o :o]
+                                  [:x :o :x]] :x)))))
