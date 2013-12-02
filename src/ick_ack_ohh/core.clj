@@ -214,6 +214,9 @@
           (not (empty? corners)) (first corners)
           :else (first (open-positions board)))))
 
+(def config {:x :bot, ;:human,
+             :o :bot})
+
 (defn -main
   [& args]
   (letfn [(parse-position [s]
@@ -229,11 +232,12 @@
             (cond (win-for-x? board) (println "X wins.")
                   (win-for-o? board) (println "O wins.")
                   (cat? board) (println "Cat wins.")
-                  :else (let [p (if (= mark :x)
+                  :else (let [opp-mark (opponent-mark-for mark)
+                              p (if (= (mark config) :human)
                                   (parse-position (prompt))
                                   (do (println)
-                                      (choose-next-move-for board :o)))
-                              b (place-mark-at board mark p)
-                              m (if (= mark :x) :o :x)]
-                          (recur b m))))]
+                                      (choose-next-move-for board
+                                                            opp-mark)))
+                              b (place-mark-at board mark p)]
+                          (recur b opp-mark))))]
     (game-loop (new-board) :x)))
