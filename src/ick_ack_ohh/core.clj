@@ -16,6 +16,7 @@
 (defn new-board
   "Returns an empty 3x3 board."
   []
+  ;; Hard-coded for 3x3.
   (vec (for [i (range 3)]
          (vec (repeat 3 :_)))))
 
