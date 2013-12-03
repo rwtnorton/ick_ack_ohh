@@ -317,3 +317,13 @@
                    (choose-next-move-for [[:x :_ :x]
                                           [:o :x :_]
                                           [:_ :_ :o]] :o)))))
+
+(deftest test-center-position
+  (testing "for new board"
+    (is (= [1 1]
+           (center-position (new-board)))))
+  (testing "for non-new board"
+    (is (= [1 1]
+           (center-position [[:x :_ :x]
+                             [:o :o :x]
+                             [:o :_ :_]])))))

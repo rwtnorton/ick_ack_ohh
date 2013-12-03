@@ -10,6 +10,9 @@
 ;;   :x, :o, or :_
 ;;
 
+(def config {:x :human,
+             :o :bot})
+
 (defn new-board
   "Returns an empty 3x3 board."
   []
@@ -95,7 +98,7 @@
   (contains? (neighborhood pos1) pos2))
 
 (defn neighboring-positions
-  "Returns set of positions adjacent with with pos with respect to board."
+  "Returns set of positions adjacent to pos with respect to board."
   [board pos]
   (let [ps (set (positions board))
         ns (neighborhood pos)]
@@ -123,21 +126,24 @@
   [board mark]
   (letfn [(winners->marks [winners]
             (map (fn [p] (value-at board p)) winners))
-          (all-x? [marks]
+          (all-marks? [marks]
             (every? (fn [m] (= m mark)) marks))]
     (boolean
-     (some (fn [winners] (all-x? (winners->marks winners)))
+     (some (fn [winners] (all-marks? (winners->marks winners)))
            (winning-positionings board)))))
 
 (defn win-for-x?
+  "Returns true iff X has won."
   [board]
   (-win-for? board :x))
 
 (defn win-for-o?
+  "Returns true iff O has won."
   [board]
   (-win-for? board :o))
 
 (defn cat?
+  "Returns true iff the game is a draw."
   [board]
   (and (full-board? board)
        (not (win-for-x? board))
@@ -145,6 +151,7 @@
 
 
 (defn finishing-moves-for
+  "Returns set of positions which would result in an immediate win for mark."
   [board mark]
   (letfn [(extract-open-pos [ms]
             (map (fn [m] (first (:_ m))) ms))
@@ -161,6 +168,7 @@
                    (winning-positionings board)))))))
 
 (defn fork-moves-for
+  "Returns set of positions which would cause a fork for mark."
   [board mark]
   (set
    (filter (fn [p]
@@ -170,32 +178,46 @@
            (open-positions board))))
 
 (defn fork-for?
+  "Returns true iff there is a fork on the board for given mark."
   [board mark]
   (>= (count (finishing-moves-for board mark))
       2))
 
 (defn opponent-mark-for
+  "Returns keyword mark of opponent."
   [mark]
   (cond (= mark :x) :o
         (= mark :o) :x
         :else :?))
 
-(defn open-center?
+(defn center-position
+  "Returns position for center of board."
   [board]
+  ;; Hard-coded for 3x3.
+  [1 1])
+
+(defn open-center?
+  "Returns true iff center position of board is unoccupied."
+  [board]
+  ;; Hard-coded for 3x3.
   (not (empty? (set-ops/intersection
                 (set (open-positions board))
-                #{[1 1]}))))
+                #{(center-position board)}))))
 
 (defn corner-positions
+  "Returns set of positions at the corners of board."
   [board]
+  ;; Hard-coded for 3x3.
   #{[0 0] [0 2] [2 0] [2 2]})
 
 (defn open-corners
+  "Returns set of unoccupied corner positions."
   [board]
   (set-ops/intersection (set (open-positions board))
                         (corner-positions board)))
 
 (defn choose-next-move-for
+  "Returns position that given player should choose next."
   [board mark]
   (let [win-ps (finishing-moves-for board mark)
         opp-mark (opponent-mark-for mark)
@@ -210,19 +232,16 @@
           (not (empty? fork-ps)) (first fork-ps)
           (not (empty? corner-fork-block-ps)) (first corner-fork-block-ps)
           (not (empty? opp-fork-ps)) (first opp-fork-ps)
-          (open-center? board) [1 1]
+          (open-center? board) (center-position board)
           (not (empty? corners)) (first corners)
-          :else (first (open-positions board)))))
-
-(def config {:x :human,
-             :o :bot})
+          :else (first (open-positions board))))) ;; So, nil if board is full.
 
 (defn -main
   [& args]
   (letfn [(parse-position [s]
-            (vec
-             (map (fn [s] (Integer/parseInt s))
-                  (clojure.string/split s #"\D+"))))
+            (vec (take 2
+                       (map (fn [s] (Integer/parseInt s))
+                            (clojure.string/split s #"\D+")))))
           (prompt []
             (print "Enter row and column (zero-indexed): ")
             (flush)
@@ -240,3 +259,4 @@
                               b (place-mark-at board mark p)]
                           (recur b opp-mark))))]
     (game-loop (new-board) :x)))
+    ;(game-loop (place-mark-at (new-board) :x (rand-nth (positions (new-board)))) :o)))
