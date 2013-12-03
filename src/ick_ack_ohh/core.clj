@@ -214,7 +214,7 @@
           (not (empty? corners)) (first corners)
           :else (first (open-positions board)))))
 
-(def config {:x :bot, ;:human,
+(def config {:x :human,
              :o :bot})
 
 (defn -main
@@ -236,8 +236,7 @@
                               p (if (= (mark config) :human)
                                   (parse-position (prompt))
                                   (do (println)
-                                      (choose-next-move-for board
-                                                            opp-mark)))
+                                      (choose-next-move-for board mark)))
                               b (place-mark-at board mark p)]
                           (recur b opp-mark))))]
     (game-loop (new-board) :x)))

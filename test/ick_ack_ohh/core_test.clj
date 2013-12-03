@@ -306,4 +306,14 @@
     (is (= nil
            (choose-next-move-for [[:o :x :x]
                                   [:x :o :o]
-                                  [:x :o :x]] :x)))))
+                                  [:x :o :x]] :x))))
+  (testing "for possible fork block"
+    (is (contains? #{[2 0] [0 2]}
+                   (choose-next-move-for [[:x :_ :_]
+                                          [:_ :x :_]
+                                          [:_ :_ :o]] :o))))
+  (testing "for impossible fork block"
+    (is (contains? #{[2 0] [0 1]}
+                   (choose-next-move-for [[:x :_ :x]
+                                          [:o :x :_]
+                                          [:_ :_ :o]] :o)))))
