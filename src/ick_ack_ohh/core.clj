@@ -250,7 +250,13 @@
   (letfn [(prompt []
             (print "Enter row and column (zero-indexed): ")
             (flush)
-            (read-line))
+            (let [v (read-line)]
+              (if (or (nil? v) ;; Something like Ctrl-D.
+                      (= v "exit")
+                      (= v "quit"))
+                (do (println "\nBye.  Thanks for playing.")
+                    (System/exit 0))
+                v)))
           (game-loop [board mark]
             (print-board board)
             (cond (win-for-x? board) (println "X wins.")
@@ -260,8 +266,17 @@
                               p (if (= (mark config) :human)
                                   (parse-position (prompt))
                                   (do (println)
-                                      (choose-next-move-for board mark)))
-                              b (place-mark-at board mark p)]
-                          (recur b opp-mark))))]
+                                      (choose-next-move-for board mark)))]
+                          (cond (not p)
+                                (do (println "Invalid input.  Please try again.")
+                                    (recur board mark))
+
+                                (mark-at? board p)
+                                (do (println "Position already taken.  Please try again.")
+                                    (recur board mark))
+
+                                :else (let [b (place-mark-at board mark p)]
+                                        (recur b opp-mark))))))]
+    (println "Tic Tac Toe.  Enter 'exit' or 'quit' to quit.")
     (game-loop (new-board) :x)))
     ;(game-loop (place-mark-at (new-board) :x (rand-nth (positions (new-board)))) :o)))
