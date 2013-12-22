@@ -241,8 +241,8 @@
   [s]
   (let [x (re-matches #"\A\s*(\d+)\D+(\d+)\s*\z" s)]
     (if x
-      (vector (Integer/parseInt (x 1))
-              (Integer/parseInt (x 2)))
+      (vector (Long/parseLong (x 1))
+              (Long/parseLong (x 2)))
       nil)))
 
 (defn -main
