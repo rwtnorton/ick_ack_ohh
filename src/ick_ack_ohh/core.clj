@@ -271,6 +271,10 @@
                                 (do (println "Invalid input.  Please try again.")
                                     (recur board mark))
 
+                                (not (contains? (set (positions board)) p))
+                                (do (println "Invalid position.  Please try again.")
+                                    (recur board mark))
+
                                 (mark-at? board p)
                                 (do (println "Position already taken.  Please try again.")
                                     (recur board mark))
