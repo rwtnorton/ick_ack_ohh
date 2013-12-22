@@ -239,7 +239,7 @@
 
 (defn parse-position
   [s]
-  (let [x (re-matches #"\A\s*(\d+)\s+(\d+)\s*\z" s)]
+  (let [x (re-matches #"\A\s*(\d+)\D+(\d+)\s*\z" s)]
     (if x
       (vector (Integer/parseInt (x 1))
               (Integer/parseInt (x 2)))

@@ -337,4 +337,6 @@
     (is (nil? (parse-position "1 two three four"))))
   (testing "for valid position"
     (is (= [0 2]
-           (parse-position "0 2")))))
+           (parse-position "0 2")))
+    (is (= [2 1]
+           (parse-position "2, 1")))))
