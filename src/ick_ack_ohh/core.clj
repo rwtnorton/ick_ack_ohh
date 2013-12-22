@@ -237,13 +237,17 @@
           (not (empty? corners)) (first corners)
           :else (first (open-positions board))))) ;; So, nil if board is full.
 
+(defn parse-position
+  [s]
+  (let [x (re-matches #"\A\s*(\d+)\s+(\d+)\s*\z" s)]
+    (if x
+      (vector (Integer/parseInt (x 1))
+              (Integer/parseInt (x 2)))
+      nil)))
+
 (defn -main
   [& args]
-  (letfn [(parse-position [s]
-            (vec (take 2
-                       (map (fn [s] (Integer/parseInt s))
-                            (clojure.string/split s #"\D+")))))
-          (prompt []
+  (letfn [(prompt []
             (print "Enter row and column (zero-indexed): ")
             (flush)
             (read-line))

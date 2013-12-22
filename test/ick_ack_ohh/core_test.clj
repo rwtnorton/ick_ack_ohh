@@ -327,3 +327,14 @@
            (center-position [[:x :_ :x]
                              [:o :o :x]
                              [:o :_ :_]])))))
+
+(deftest test-parse-position
+  (testing "for empty string"
+    (is (nil? (parse-position ""))))
+  (testing "for single coordinate"
+    (is (nil? (parse-position "2"))))
+  (testing "for gibberish"
+    (is (nil? (parse-position "1 two three four"))))
+  (testing "for valid position"
+    (is (= [0 2]
+           (parse-position "0 2")))))
