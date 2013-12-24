@@ -13,12 +13,179 @@
 (def config {:x :human,
              :o :bot})
 
+(declare board->string
+         cat?
+         center-position
+         choose-next-move-for
+         corner-positions
+         finishing-moves-for
+         fork-for?
+         fork-moves-for
+         full-board?
+         mark->string
+         mark-at?
+         new-board
+         open-at?
+         open-center?
+         open-corners
+         open-positions
+         opponent-mark-for
+         parse-position
+         place-mark-at
+         positions
+         print-board
+         value-at
+         win-for-o?
+         win-for-x?
+         winning-positionings)
+
+(defn -main
+  [& args]
+  (letfn [(prompt []
+            (print "Enter row and column (zero-indexed): ")
+            (flush)
+            (let [v (read-line)]
+              (if (or (nil? v) ;; Something like Ctrl-D.
+                      (= v "exit")
+                      (= v "quit"))
+                (do (println "\nBye.  Thanks for playing.")
+                    (System/exit 0))
+                v)))
+          (game-loop [board mark]
+            (print-board board)
+            (cond (win-for-x? board) (println "X wins.")
+                  (win-for-o? board) (println "O wins.")
+                  (cat? board) (println "Cat wins.")
+                  :else (let [opp-mark (opponent-mark-for mark)
+                              p (if (= (mark config) :human)
+                                  (parse-position (prompt))
+                                  (do (println)
+                                      (choose-next-move-for board mark)))]
+                          (cond (not p)
+                                (do (println "Invalid input.  Please try again.")
+                                    (recur board mark))
+
+                                (not (contains? (set (positions board)) p))
+                                (do (println "Invalid position.  Please try again.")
+                                    (recur board mark))
+
+                                (mark-at? board p)
+                                (do (println "Position already taken.  Please try again.")
+                                    (recur board mark))
+
+                                :else (let [b (place-mark-at board mark p)]
+                                        (recur b opp-mark))))))]
+    (println "Tic Tac Toe.  Enter 'exit' or 'quit' to quit.")
+    (game-loop (new-board) :x)))
+    ;(game-loop (place-mark-at (new-board) :x (rand-nth (positions (new-board)))) :o)))
+
+(defn parse-position
+  [s]
+  (let [x (re-matches #"\A\s*(\d+)\D+(\d+)\s*\z" s)]
+    (if x
+      (vector (Long/parseLong (x 1))
+              (Long/parseLong (x 2)))
+      nil)))
+
 (defn new-board
   "Returns an empty 3x3 board."
   []
   ;; Hard-coded for 3x3.
   (vec (for [i (range 3)]
          (vec (repeat 3 :_)))))
+
+(defn choose-next-move-for
+  "Returns position that given player should choose next."
+  [board mark]
+  (let [win-ps (finishing-moves-for board mark)
+        opp-mark (opponent-mark-for mark)
+        opp-win-ps (finishing-moves-for board opp-mark)
+        fork-ps (fork-moves-for board mark)
+        opp-fork-ps (fork-moves-for board opp-mark)
+        corner-fork-block-ps (set-ops/intersection opp-fork-ps
+                                                   (corner-positions board))
+        corners (open-corners board)]
+    (cond (not (empty? win-ps)) (first win-ps)
+          (not (empty? opp-win-ps)) (first opp-win-ps)
+          (not (empty? fork-ps)) (first fork-ps)
+          (not (empty? corner-fork-block-ps)) (first corner-fork-block-ps)
+          (not (empty? opp-fork-ps)) (first opp-fork-ps)
+          (open-center? board) (center-position board)
+          (not (empty? corners)) (first corners)
+          :else (first (open-positions board))))) ;; So, nil if board is full.
+
+(defn winning-positionings
+  "Returns set of sets of positions crucial to a win."
+  [board]
+  ;; Hard-coded for 3x3.
+  #{ #{[0 0] [0 1] [0 2]}
+     #{[1 0] [1 1] [1 2]}
+     #{[2 0] [2 1] [2 2]}
+     #{[0 0] [1 0] [2 0]}
+     #{[0 1] [1 1] [2 1]}
+     #{[0 2] [1 2] [2 2]}
+     #{[0 0] [1 1] [2 2]}
+     #{[0 2] [1 1] [2 0]} })
+
+(defn -win-for?
+  [board mark]
+  (letfn [(winners->marks [winners]
+            (map (fn [p] (value-at board p)) winners))
+          (all-marks? [marks]
+            (every? (fn [m] (= m mark)) marks))]
+    (boolean
+     (some (fn [winners] (all-marks? (winners->marks winners)))
+           (winning-positionings board)))))
+
+(defn win-for-x?
+  "Returns true iff X has won."
+  [board]
+  (-win-for? board :x))
+
+(defn win-for-o?
+  "Returns true iff O has won."
+  [board]
+  (-win-for? board :o))
+
+(defn cat?
+  "Returns true iff the game is a draw."
+  [board]
+  (and (full-board? board)
+       (not (win-for-x? board))
+       (not (win-for-o? board))))
+
+(defn finishing-moves-for
+  "Returns set of positions which would result in an immediate win for mark."
+  [board mark]
+  (letfn [(extract-open-pos [ms]
+            (map (fn [m] (first (:_ m))) ms))
+          (group-by-marks [ps]
+            (group-by (fn [p] (value-at board p)) ps))
+          (poised? [ps-by-marks]
+            (let [mark-count (count (mark ps-by-marks))
+                  open-count (count (:_ ps-by-marks))]
+              (and (= 1 open-count) (= 2 mark-count))))]
+    (set
+     (extract-open-pos
+      (filter (fn [ps-by-marks] (poised? ps-by-marks))
+              (map (fn [ps] (group-by-marks ps))
+                   (winning-positionings board)))))))
+
+(defn fork-moves-for
+  "Returns set of positions which would cause a fork for mark."
+  [board mark]
+  (set
+   (filter (fn [p]
+             (let [b (place-mark-at board mark p)
+                   win-ps (finishing-moves-for b mark)]
+               (>= (count win-ps) 2)))
+           (open-positions board))))
+
+(defn fork-for?
+  "Returns true iff there is a fork on the board for given mark."
+  [board mark]
+  (>= (count (finishing-moves-for board mark))
+      2))
 
 (defn mark->string
   "Returns a string representation for a board mark."
@@ -85,104 +252,10 @@
             (open-at? board pos))
           (positions board)))
 
-(defn neighborhood
-  "Returns set of positions logically adjacent with pos, independent of board."
-  [[row col]]
-  (let [nbhd (for [r (map (fn [d] (+ row d)) [-1 0 1])
-                   c (map (fn [d] (+ col d)) [-1 0 1])]
-               [r c])]
-    (set-ops/difference (set nbhd) #{[row col]})))
-
-(defn neighbors?
-  "Returns true iff pos1 is logically adjacent with pos2, independent of board."
-  [pos1 pos2]
-  (contains? (neighborhood pos1) pos2))
-
-(defn neighboring-positions
-  "Returns set of positions adjacent to pos with respect to board."
-  [board pos]
-  (let [ps (set (positions board))
-        ns (neighborhood pos)]
-    (set-ops/intersection ns ps)))
-
-(defn winning-positionings
-  "Returns set of sets of positions crucial to a win."
-  [board]
-  ;; Hard-coded for 3x3.
-  #{ #{[0 0] [0 1] [0 2]}
-     #{[1 0] [1 1] [1 2]}
-     #{[2 0] [2 1] [2 2]}
-     #{[0 0] [1 0] [2 0]}
-     #{[0 1] [1 1] [2 1]}
-     #{[0 2] [1 2] [2 2]}
-     #{[0 0] [1 1] [2 2]}
-     #{[0 2] [1 1] [2 0]} })
-
 (defn full-board?
   "Returns true iff board has no open positions left."
   [board]
   (empty? (open-positions board)))
-
-(defn -win-for?
-  [board mark]
-  (letfn [(winners->marks [winners]
-            (map (fn [p] (value-at board p)) winners))
-          (all-marks? [marks]
-            (every? (fn [m] (= m mark)) marks))]
-    (boolean
-     (some (fn [winners] (all-marks? (winners->marks winners)))
-           (winning-positionings board)))))
-
-(defn win-for-x?
-  "Returns true iff X has won."
-  [board]
-  (-win-for? board :x))
-
-(defn win-for-o?
-  "Returns true iff O has won."
-  [board]
-  (-win-for? board :o))
-
-(defn cat?
-  "Returns true iff the game is a draw."
-  [board]
-  (and (full-board? board)
-       (not (win-for-x? board))
-       (not (win-for-o? board))))
-
-
-(defn finishing-moves-for
-  "Returns set of positions which would result in an immediate win for mark."
-  [board mark]
-  (letfn [(extract-open-pos [ms]
-            (map (fn [m] (first (:_ m))) ms))
-          (group-by-marks [ps]
-            (group-by (fn [p] (value-at board p)) ps))
-          (poised? [ps-by-marks]
-            (let [mark-count (count (mark ps-by-marks))
-                  open-count (count (:_ ps-by-marks))]
-              (and (= 1 open-count) (= 2 mark-count))))]
-    (set
-     (extract-open-pos
-      (filter (fn [ps-by-marks] (poised? ps-by-marks))
-              (map (fn [ps] (group-by-marks ps))
-                   (winning-positionings board)))))))
-
-(defn fork-moves-for
-  "Returns set of positions which would cause a fork for mark."
-  [board mark]
-  (set
-   (filter (fn [p]
-             (let [b (place-mark-at board mark p)
-                   win-ps (finishing-moves-for b mark)]
-               (>= (count win-ps) 2)))
-           (open-positions board))))
-
-(defn fork-for?
-  "Returns true iff there is a fork on the board for given mark."
-  [board mark]
-  (>= (count (finishing-moves-for board mark))
-      2))
 
 (defn opponent-mark-for
   "Returns keyword mark of opponent."
@@ -216,71 +289,3 @@
   [board]
   (set-ops/intersection (set (open-positions board))
                         (corner-positions board)))
-
-(defn choose-next-move-for
-  "Returns position that given player should choose next."
-  [board mark]
-  (let [win-ps (finishing-moves-for board mark)
-        opp-mark (opponent-mark-for mark)
-        opp-win-ps (finishing-moves-for board opp-mark)
-        fork-ps (fork-moves-for board mark)
-        opp-fork-ps (fork-moves-for board opp-mark)
-        corner-fork-block-ps (set-ops/intersection opp-fork-ps
-                                                   (corner-positions board))
-        corners (open-corners board)]
-    (cond (not (empty? win-ps)) (first win-ps)
-          (not (empty? opp-win-ps)) (first opp-win-ps)
-          (not (empty? fork-ps)) (first fork-ps)
-          (not (empty? corner-fork-block-ps)) (first corner-fork-block-ps)
-          (not (empty? opp-fork-ps)) (first opp-fork-ps)
-          (open-center? board) (center-position board)
-          (not (empty? corners)) (first corners)
-          :else (first (open-positions board))))) ;; So, nil if board is full.
-
-(defn parse-position
-  [s]
-  (let [x (re-matches #"\A\s*(\d+)\D+(\d+)\s*\z" s)]
-    (if x
-      (vector (Long/parseLong (x 1))
-              (Long/parseLong (x 2)))
-      nil)))
-
-(defn -main
-  [& args]
-  (letfn [(prompt []
-            (print "Enter row and column (zero-indexed): ")
-            (flush)
-            (let [v (read-line)]
-              (if (or (nil? v) ;; Something like Ctrl-D.
-                      (= v "exit")
-                      (= v "quit"))
-                (do (println "\nBye.  Thanks for playing.")
-                    (System/exit 0))
-                v)))
-          (game-loop [board mark]
-            (print-board board)
-            (cond (win-for-x? board) (println "X wins.")
-                  (win-for-o? board) (println "O wins.")
-                  (cat? board) (println "Cat wins.")
-                  :else (let [opp-mark (opponent-mark-for mark)
-                              p (if (= (mark config) :human)
-                                  (parse-position (prompt))
-                                  (do (println)
-                                      (choose-next-move-for board mark)))]
-                          (cond (not p)
-                                (do (println "Invalid input.  Please try again.")
-                                    (recur board mark))
-
-                                (not (contains? (set (positions board)) p))
-                                (do (println "Invalid position.  Please try again.")
-                                    (recur board mark))
-
-                                (mark-at? board p)
-                                (do (println "Position already taken.  Please try again.")
-                                    (recur board mark))
-
-                                :else (let [b (place-mark-at board mark p)]
-                                        (recur b opp-mark))))))]
-    (println "Tic Tac Toe.  Enter 'exit' or 'quit' to quit.")
-    (game-loop (new-board) :x)))
-    ;(game-loop (place-mark-at (new-board) :x (rand-nth (positions (new-board)))) :o)))

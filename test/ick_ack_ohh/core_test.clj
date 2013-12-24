@@ -109,16 +109,6 @@
     (is (= (open-positions [[:x :o :x][:o :x :o][:x :x :o]])
            []))))
 
-(deftest test-neighboring-positions
-  (testing "from top-left"
-    (is (= (neighboring-positions (new-board) [0 0])
-           #{[0 1] [1 0] [1 1]})))
-  (testing "from center"
-    (is (= (neighboring-positions (new-board) [1 1])
-           #{ [0 0] [0 1] [0 2]
-              [1 0]       [1 2]
-              [2 0] [2 1] [2 2] }))))
-
 (deftest test-winning-positionings
   (is (= (winning-positionings (new-board))
          #{ #{[0 0] [0 1] [0 2]}
