@@ -321,12 +321,27 @@
 (deftest test-parse-position
   (testing "for empty string"
     (is (nil? (parse-position ""))))
-  (testing "for single coordinate"
-    (is (nil? (parse-position "2"))))
-  (testing "for gibberish"
-    (is (nil? (parse-position "1 two three four"))))
-  (testing "for valid position"
-    (is (= [0 2]
-           (parse-position "0 2")))
-    (is (= [2 1]
-           (parse-position "2, 1")))))
+  (testing "for 1"
+    (is (= (parse-position "1") [0 0])))
+  (testing "for 2"
+    (is (= (parse-position "2") [0 1])))
+  (testing "for 3"
+    (is (= (parse-position "3") [0 2])))
+  (testing "for 4"
+    (is (= (parse-position "4") [1 0])))
+  (testing "for 5"
+    (is (= (parse-position "5") [1 1])))
+  (testing "for 6"
+    (is (= (parse-position "6") [1 2])))
+  (testing "for 7"
+    (is (= (parse-position "7") [2 0])))
+  (testing "for 8"
+    (is (= (parse-position "8") [2 1])))
+  (testing "for 9"
+    (is (= (parse-position "9") [2 2])))
+  (testing "for 0"
+    (is (nil? (parse-position "0"))))
+  (testing "for 42"
+    (is (nil? (parse-position "42"))))
+  (testing "for six"
+    (is (nil? (parse-position "six")))))

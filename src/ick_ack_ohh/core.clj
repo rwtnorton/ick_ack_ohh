@@ -42,7 +42,7 @@
 (defn -main
   [& args]
   (letfn [(prompt []
-            (print "Enter row and column (zero-indexed): ")
+            (print "Enter position: ")
             (flush)
             (let [v (read-line)]
               (if (or (nil? v) ;; Something like Ctrl-D.
@@ -75,16 +75,19 @@
 
                                 :else (let [b (place-mark-at board mark p)]
                                         (recur b opp-mark))))))]
-    (println "Tic Tac Toe.  Enter 'exit' or 'quit' to quit.")
+    (println "Tic Tac Toe.  Enter 'exit' or 'quit' to quit.  Valid positions:")
+    (println "1|2|3\n-+-+-\n4|5|6\n-+-+-\n7|8|9\n")
     (game-loop (new-board) :x)))
     ;(game-loop (place-mark-at (new-board) :x (rand-nth (positions (new-board)))) :o)))
 
 (defn parse-position
   [s]
-  (let [x (re-matches #"\A\s*(\d+)\D+(\d+)\s*\z" s)]
+  (let [x (re-matches #"\A\s*([1-9])\s*\z" s)]
     (if x
-      (vector (Long/parseLong (x 1))
-              (Long/parseLong (x 2)))
+      (let [n (Integer/parseInt (x 1))
+            row (quot (- n 1) 3)
+            col (rem  (- n 1) 3)]
+        [row col])
       nil)))
 
 (defn new-board
